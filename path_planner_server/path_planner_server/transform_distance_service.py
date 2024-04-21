@@ -8,10 +8,11 @@ from rclpy.node import Node
 from tf2_ros import TransformException
 from tf2_ros.buffer import Buffer
 from tf2_ros.transform_listener import TransformListener
+from tf2_geometry_msgs import do_transform_point
+from geometry_msgs.msg import PointStamped, Point
+from laser_geometry import LaserProjection
 
 import math
-
-import tf_transformations
 
 class Service(Node):
 
@@ -41,57 +42,45 @@ class Service(Node):
             angle = math.atan2(y, x)
             range = math.sqrt(x ** 2 + y ** 2)
         
-        [response.x, response.y] = self.transform(angle, range)
-
-        self.get_logger().info('Sending response %f, %f' % (response.x, response.y))
-
-        return response
+        return do_transform_point(angle, range, response)
 
     def service_rtp(self, request, response):
         self.get_logger().info('Got request angle in radians: %f, range: %f' % (request.angle, request.range))
 
-        [response.x, response.y] = self.transform(request.angle, request.range)
-
-        self.get_logger().info('Sending response %f, %f' % (response.x, response.y))
-
-        return response
+        return self.do_transform(request.angle, request.range, response)
 
     def service_gtp(self, request, response):
         self.get_logger().info('Got request angle in grads: %f, range: %f' % (request.angle, request.range))
         
-        [response.x, response.y] = self.transform(request.angle * 0.0174533, request.range)
+        return self.do_transform(request.angle * 0.0174533, request.range, response)
 
-        self.get_logger().info('Sending response %f, %f' % (response.x, response.y))
+    def do_transform(self, angle, range, response):
+        response.point = self.transform(angle, range)
+
+        self.get_logger().info('Sending response %s' % (response.point))
 
         return response
 
-    def transform(self, radians, range, origin_frame="base_scan", dest_frame="map"):
-        # Look up for the transformation between dest_frame and turtle2 frames
-        # and send velocity commands for turtle2 to reach dest_frame
+
+    def transform(self, radians, range, source_frame="base_scan", target_frame="map"):
         try:
             now = rclpy.time.Time()
             trans = self.tf_buffer.lookup_transform(
-                origin_frame,
-                dest_frame,
-                now)
+                source_frame=source_frame,
+                target_frame=target_frame,
+                time=now)
         except TransformException as ex:
             self.get_logger().error(
-                f'Could not transform {origin_frame} to {dest_frame}: {ex}')
+                f'Could not transform {source_frame} to {target_frame}: {ex}')
             return [None, None]
-        
-        dx = trans.transform.translation.x
-        dy = trans.transform.translation.y
 
-        rot = trans.transform.rotation
+        x = range * math.cos(radians)
+        y = range * math.sin(radians)
+        point_source = PointStamped(point=Point(x=x, y=y, z=0.0))
 
-        [roll, pitch, yaw] = tf_transformations.euler_from_quaternion([rot.x, rot.y, rot.z, rot.w])
+        p = do_transform_point(point_source, trans)
 
-        self.get_logger().info('transform %f, %f, %f' % (dx, dy, yaw))
-
-        x = range * math.cos(radians + yaw) + dx
-        y = range * math.sin(radians + yaw) + dy
-
-        return [x , y]
+        return p
 
 
 def main(args=None):

@@ -20,3 +20,4 @@ ros2 launch path_planner_server navigation.launch.py
 
 rviz2 -d ~/ros2_ws/src/pathplanning_rviz_conf.rviz
 
+ros2 run path_planner_server walk
