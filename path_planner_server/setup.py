@@ -26,7 +26,8 @@ setup(
         'console_scripts': [
         'nav_to_pose = path_planner_server.nav_to_pose_action_client:main',
         'transform = path_planner_server.transform_distance_service:main',
-        'walk = path_planner_server.walk_farthest:main'
+        'walk = path_planner_server.walk_farthest:main',
+        'rectangle_finder = path_planner_server.outer_rectangle_finder:main'
         ],
     },
 )

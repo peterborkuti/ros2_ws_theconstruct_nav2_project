@@ -1,0 +1,4 @@
+sensor_msgs/LaserScan scan
+float32 distance
+---
+geometry_msgs/PointStamped[] corners

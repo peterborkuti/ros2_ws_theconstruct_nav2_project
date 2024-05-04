@@ -42,7 +42,7 @@ class Service(Node):
             angle = math.atan2(y, x)
             range = math.sqrt(x ** 2 + y ** 2)
         
-        return do_transform_point(angle, range, response)
+        return self.do_transform(angle, range, response)
 
     def service_rtp(self, request, response):
         self.get_logger().info('Got request angle in radians: %f, range: %f' % (request.angle, request.range))
