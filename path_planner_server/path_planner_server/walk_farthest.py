@@ -31,6 +31,7 @@ class Walker(Node):
         self.marker_id = 0
         self.counter = 0
         self.q = queue.Queue()
+        self.walking_points: List[PointStamped]
         self.color1 = ColorRGBA(r=1.0, g=0.984, b=0.0, a=1.0)
         self.color2 = ColorRGBA(r=0.929, g=0.098, b=1.0, a=1.0)
 
@@ -55,23 +56,36 @@ class Walker(Node):
         self.get_logger().info('start walking')
         self.destroy_timer(self.call_timer)
 
+        index = 0
         while True:
             self.get_logger().info('start sequence')
-            for corner_index in range(4):
-                # corners in PointStamped in the base_scan coordinate frame
-                corners = self.outer_rectangle(self.q.get())
-                self.get_logger().info('got corners: (%s)' % (corners))
-                self.add_markers(corners)
+            self.get_walking_points()
+            self.go_to_next_point(index)
 
-                point = self.transform(corners[corner_index], 'map')
-                if point is None:
-                    self.get_logger().info('transformed point is None!')
-                    continue
-                self.get_logger().info('transformed to map: %s' % (point))
-                self.add_marker(point)
+            index = (index + 1) % 4
 
-                self.navigate_to_coord(point)
-                self.rate.sleep()
+            self.rate.sleep()
+
+    def get_walking_points(self):
+        # corners in PointStamped in the base_scan coordinate frame
+        corners = self.outer_rectangle(self.q.get())
+        self.get_logger().info('got corners: (%s)' % (corners))
+        self.add_markers(corners)
+
+        self.walking_points = corners
+
+    def go_to_next_point(self, index: int):
+        if len(self.walking_points) < 4:
+            return
+
+        point = self.transform(self.walking_points[index], 'map')
+        if point is None:
+            self.get_logger().info('transformed point is None!')
+            return
+        self.get_logger().info('transformed to map: %s' % (point))
+        self.add_marker(point)
+
+        self.navigate_to_coord(point)
 
    
     def to_point(self, angle, range):
