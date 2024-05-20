@@ -83,8 +83,8 @@ def generate_launch_description():
     )
 
     managed_node_names = [
-        'map_server',
-        'amcl',
+        #'map_server',
+        #'amcl',
         'controller_server',
         'planner_server',
         'recoveries_server',
@@ -103,8 +103,8 @@ def generate_launch_description():
         )
 
     nodes = [
-        map_server_node,
-        amcl_node,
+        #map_server_node,
+        #amcl_node,
         controller_node,
         planner_node,
         recovery_node,

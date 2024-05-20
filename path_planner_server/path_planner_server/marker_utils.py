@@ -7,7 +7,13 @@ import random
 from std_msgs.msg import ColorRGBA
 from builtin_interfaces.msg import Time
 
-def getAddMarker(point: PointStamped, color: ColorRGBA) -> Marker:
+MARKER_COLORS = [ColorRGBA(r=1.0, g=0.984, b=0.0, a=1.0), ColorRGBA(r=0.929, g=0.098, b=1.0, a=1.0)]
+
+def getAddMarker(point: PointStamped, color_index = 0) -> Marker:
+    """
+        color_index: index for MARKER_COLORS
+    """
+    color = MARKER_COLORS[color_index]
     marker = Marker()
     marker.header = point.header
     marker.ns = 'walker'
@@ -22,14 +28,16 @@ def getAddMarker(point: PointStamped, color: ColorRGBA) -> Marker:
 
     return marker
 
-#time: node..get_clock().now()
 def remove_marker(marker_id: int, time: Time, publisher: Publisher, logger: RcutilsLogger):
-        marker = Marker()
-        marker.header.frame_id = 'map'
-        marker.header.stamp = time.to_msg()
-        marker.action = 2
-        marker.ns = 'walker'
-        marker.id = marker_id
+    """
+        How to use time parameter: node.get_clock().now()
+    """
+    marker = Marker()
+    marker.header.frame_id = 'map'
+    marker.header.stamp = time.to_msg()
+    marker.action = 2
+    marker.ns = 'walker'
+    marker.id = marker_id
 
-        publisher.publish(marker)
-        logger.info('marker removed with id: %d' % (marker.id))
+    publisher.publish(marker)
+    logger.info('marker removed with id: %d' % (marker.id))

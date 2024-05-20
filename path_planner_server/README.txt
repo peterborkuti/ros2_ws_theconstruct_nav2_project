@@ -2,6 +2,9 @@ Start simu
 source ~/simulation_ws/install/setup.bash
 ros2 launch turtlebot3_gazebo main_turtlebot3_lab.launch.xml
 
+ros2 launch slam_toolbox online_async_launch.py
+
+
 cd ros2_ws
 source install/setup.bash
 ros2 launch path_planner_server navigation.launch.py
@@ -10,11 +13,11 @@ ros2 launch path_planner_server navigation.launch.py
 #source install/setup.bash
 #ros2 run path_planner_server transform
 
-cd ros2_ws
-source install/setup.bash
-ros2 run path_planner_server rectangle_finder
+#cd ros2_ws
+#source install/setup.bash
+#ros2 run path_planner_server rectangle_finder
 
-cd ros2_ws/src
+cd ros2_ws/src/path_planning_server/config
 rviz2 -d ./pathplanning_rviz_conf.rviz
 
 cd ros2_ws

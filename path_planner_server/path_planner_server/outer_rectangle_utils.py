@@ -49,7 +49,7 @@ class OuterRectangle:
         return abs(v - v_plus) < delta or abs(v - v_minus) < delta
 
 
-def find_outer_rectangle(node: Node, ranges: List[float], angle_increment: float, header: Header) -> OuterRectangle:
+def find_outer_rectangle(node: Node, ranges: List[float], angle_min: float, angle_increment: float, header: Header) -> OuterRectangle:
     node.get_logger().debug('find outer rectangle started')
 
     rectangle = OuterRectangle()
@@ -58,11 +58,11 @@ def find_outer_rectangle(node: Node, ranges: List[float], angle_increment: float
     offset_pi_half = round(pi / 2.0 / angle_increment)
     for beta_index in range(offset_pi_half):
         node.get_logger().debug('betaindex: %d' % beta_index)
-        angles: List[float] = [(i + beta_index) * angle_increment for i,r in enumerate(ranges)]
+        angles: List[float] = [(i + beta_index) * angle_increment + angle_min for i,r in enumerate(ranges)]
 
         minr = min(ranges)
         xs: List[float] = [(minr if isinf(r) else r) * cos(angles[i]) for i,r in enumerate(ranges)]
-        ys:  List[float] = [(minr if isinf(r) else r) * sin(angles[i]) for i,r in enumerate(ranges)]
+        ys: List[float] = [(minr if isinf(r) else r) * sin(angles[i]) for i,r in enumerate(ranges)]
 
         # rectangle height upward from the robot
         x_plus = max(xs)
@@ -77,7 +77,7 @@ def find_outer_rectangle(node: Node, ranges: List[float], angle_increment: float
 
         rectangle_area = (x_plus - x_minus) * (y_plus - y_minus)
         if rectangle.area > rectangle_area:
-            rectangle.beta = beta_index * angle_increment
+            rectangle.beta = beta_index * angle_increment + angle_min
             rectangle.area = rectangle_area
             rectangle.xs = xs
             rectangle.ys = ys
